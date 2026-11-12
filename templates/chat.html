@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block title %}Prosper &amp; Charlène — chats{% endblock %}
+{% block body %}
+<header class="topbar">
+  <a class="brand" href="/chat"><span class="brand-mark">♥</span><span>Prosper ♥ Charlène</span></a>
+  <nav class="toolbar"><a href="/new-chat">New message</a><a href="/settings">Settings</a></nav>
+  <div class="spacer"></div><button class="icon-btn install-btn" onclick="handleInstallClick()" title="Install the app">⭳ Install app</button><button class="icon-btn" onclick="toggleTheme()" title="Toggle theme">◐</button><button class="icon-btn" onclick="logout()" title="Log out">Log out</button>
+</header>
+<div class="shell{% if active_username %} thread-open{% endif %}" id="chat-shell">
+  <aside class="sidebar">
+    <div class="side-head"><h1>Chats</h1><div class="spacer"></div><a class="icon-btn side-action" href="/new-chat" title="New message"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></a><a class="icon-btn side-action" href="/settings" title="Settings"><svg viewBox="0 0 24 24"><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6 7 7M17 17l1.4 1.4M18.4 5.6 17 7M7 17l-1.4 1.4"/><circle cx="12" cy="12" r="3.5"/></svg></a></div>
+    <label class="search"><span aria-hidden="true">⌕</span><input id="search" placeholder="Search your messages"></label>
+    <button class="pill archived-toggle" id="archived-toggle-btn" type="button" onclick="toggleArchivedView()" hidden>Archived (<span>0</span>)</button>
+    <div class="contact-list" id="contacts"></div>
+  </aside>
+  <main class="main">
+    <section class="empty-main" id="empty-main"><div><div class="empty-logo">♥</div><h2>Prosper ♥ Charlène</h2><p>Your private little world. Just the two of you.</p></div></section>
+    <section class="thread" id="thread" hidden>
+       <div class="thread-head"><button class="icon-btn" onclick="closeThread()" title="Back">‹</button><button class="thread-profile-trigger" id="thread-profile-trigger" type="button" title="View profile" aria-label="View profile"><div class="avatar" id="thread-avatar"></div><div class="thread-info"><strong id="thread-name"></strong><span class="thread-status" id="thread-status"></span></div></button><div class="spacer"></div><label class="contact-time hide-mobile" title="Disappearing messages">⌛ <select id="disappearing" onchange="saveDisappearing(this.value)" style="background:var(--panel);border:1px solid var(--line);color:var(--text);border-radius:7px;padding:5px"><option value="0">Off</option><option value="86400">24h</option><option value="604800">7d</option><option value="7776000">90d</option></select></label><button class="icon-btn" id="thread-more" type="button" title="More options" aria-label="More options">⋮</button><div class="thread-menu" id="thread-menu"><button type="button" onclick="location.href='/new-chat'">New message</button><button type="button" id="thread-archive-btn" onclick="toggleActiveArchive()">Archive chat</button><button type="button" class="danger" onclick="clearActiveChat()">Clear chat</button><button type="button" class="danger" onclick="deleteActiveChat()">Delete chat</button><button type="button" class="danger" onclick="blockActiveUser()">Block user</button></div></div>
+      <div class="messages" id="messages"></div>
+      <form class="composer" id="composer">
+         <input id="attachment-input" type="file" accept="image/*,video/*,audio/*" hidden>
+        <button class="icon-btn" id="attach-button" type="button" title="Add an attachment" aria-label="Add an attachment">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m20.5 11.5-8.9 8.9a5 5 0 0 1-7.1-7.1l9.2-9.2a3.5 3.5 0 0 1 5 5l-9.2 9.2a2 2 0 1 1-2.8-2.8l8.5-8.5"/></svg>
+        </button>
+        <textarea id="message-input" rows="1" placeholder="Write something sweet…"></textarea>
+         <button class="icon-btn voice-button" id="voice-button" type="button" title="Tap to record, tap again to send" aria-label="Tap to record, tap again to send">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg>
+        </button>
+        <button class="send" type="submit" title="Send message" aria-label="Send message">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 4 16 8-16 8 3-8-3-8Zm3 8h13"/></svg>
+        </button>
+      </form>
+    </section>
+  </main>
+</div>
+<nav class="mobile-nav" aria-label="Mobile navigation">
+  <a class="mobile-nav-item active" href="/chat"><span>⌂</span><small>Chats</small></a>
+  <a class="mobile-nav-item" href="/new-chat"><span>♥</span><small>New</small></a>
+  <a class="mobile-nav-item" href="/settings"><span>⚙</span><small>Settings</small></a>
+</nav>
+<div class="profile-modal" id="profile-modal" aria-hidden="true">
+  <div class="profile-modal-card">
+    <button class="profile-modal-close" id="profile-modal-close" type="button" aria-label="Close">×</button>
+    <div id="profile-modal-avatar"></div>
+    <h2 id="profile-modal-name"></h2>
+    <p class="profile-modal-status" id="profile-modal-status"></p>
+    <div class="discover-details" id="profile-modal-details"></div>
+    <div class="setting profile-modal-setting">
+      <div><b>Mute notifications</b><small>Silence alerts for this chat.</small></div>
+      <button class="switch" id="profile-modal-mute-switch" type="button" onclick="toggleActiveMute()" aria-label="Mute notifications"><i></i></button>
+    </div>
+    <section class="profile-modal-media-section" id="profile-modal-media-section" hidden>
+      <div class="status-section-title">Shared media</div>
+      <div class="shared-media-grid" id="profile-modal-media"></div>
+    </section>
+    <div class="profile-modal-actions">
+      <button class="btn secondary danger" type="button" onclick="clearActiveChat()">Clear chat</button>
+      <button class="btn secondary danger" type="button" onclick="deleteActiveChat()">Delete chat</button>
+      <button class="btn secondary danger" type="button" onclick="blockActiveUser()">Block</button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}<script>window.ACTIVE_USERNAME={{ active_username|tojson }};initChatPage();</script>
+<script>
+  function loveChatName() {
+    var el = document.getElementById('thread-name');
+    var t = el && el.textContent.trim();
+    if (t) return t;
+    var m = location.pathname.match(/^\/chat\/([^/]+)/);
+    if (m) return decodeURIComponent(m[1]);
+    return window.ACTIVE_USERNAME || '';
+  }
+  function loveCloseMenus() {
+    var menu = document.getElementById('thread-menu'); if (menu) menu.classList.remove('open');
+    var modal = document.getElementById('profile-modal'); if (modal) modal.classList.remove('open');
+  }
+  async function clearActiveChat() {
+    var name = loveChatName(); loveCloseMenus(); if (!name) return;
+    var ok = await love.confirm('Clear chat?', 'All messages with ' + name + ' will be removed from your phone. ' + name + ' keeps their own copy.', 'Clear chat', true);
+    if (!ok) return;
+    try {
+      await love.api('/chat/' + encodeURIComponent(name) + '/clear', 'POST');
+      love.toast('Chat cleared');
+      var target = '/chat/' + encodeURIComponent(name);
+      setTimeout(function () { if (location.pathname === target) location.reload(); else location.href = target; }, 500);
+    } catch (e) { love.toast(e.message); }
+  }
+  async function deleteActiveChat() {
+    var name = loveChatName(); loveCloseMenus(); if (!name) return;
+    var ok = await love.confirm('Delete chat?', 'The chat with ' + name + ' and all its messages will be removed from your side. It comes back, empty, when either of you sends a new message.', 'Delete chat', true);
+    if (!ok) return;
+    try {
+      await love.api('/chat/' + encodeURIComponent(name) + '/delete', 'POST');
+      love.toast('Chat deleted');
+      setTimeout(function () { location.href = '/chat'; }, 500);
+    } catch (e) { love.toast(e.message); }
+  }
+</script>{% endblock %}

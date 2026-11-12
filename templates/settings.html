@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}Prosper &amp; Charlène — settings{% endblock %}
+{% block body %}
+<header class="topbar"><a class="brand" href="/chat"><span class="brand-mark" aria-hidden="true">♥</span><span>Prosper ♥ Charlène</span></a><div class="spacer"></div><button class="icon-btn install-btn" onclick="handleInstallClick()" title="Install the app">⭳ Install app</button><a href="/chat">Back to chats</a></header>
+<main class="page">
+  <h1>Settings</h1><p class="page-sub">Make this space feel like yours. You can change your privacy choices whenever you want.</p>
+  {% if settings_section == "root" %}
+  <div class="card">
+    <a class="setting" href="/settings/account"><div><b>Account</b><small>Change your username or log out.</small></div><span>›</span></a>
+    <a class="setting" href="/settings/privacy"><div><b>Privacy</b><small>Choose who can see your online status and last seen.</small></div><span>›</span></a>
+    <a class="setting" href="/settings/blocked"><div><b>Blocked users</b><small>Manage the people you've blocked.</small></div><span>›</span></a>
+    <a class="setting" href="/settings/appearance"><div><b>Appearance</b><small>Theme and interface preferences.</small></div><span>›</span></a>
+    <a class="setting" href="/settings/notifications"><div><b>Notifications</b><small>Message alerts on this browser.</small></div><span>›</span></a>
+    <a class="setting" href="/settings/language"><div><b>Language</b><small>Choose the interface language.</small></div><span>›</span></a>
+  </div>
+  {% elif settings_section == "account" %}
+  <div class="card">
+    <h3>Profile photo</h3>
+    <div class="photo-picker">
+      <div class="photo-preview" id="avatar-preview">👤</div>
+      <label class="upload-label">Change photo<input type="file" id="avatar-upload" accept="image/*"></label>
+    </div>
+  </div>
+  <div class="card"><h3>Username</h3><div class="field"><input id="new-username" placeholder="New username" maxlength="24"><button class="btn" onclick="saveUsername()">Save</button></div></div>
+  <div class="card">
+    <h3>Change password</h3>
+    <div class="field"><input id="current-password" type="password" placeholder="Current password" autocomplete="current-password"></div>
+    <div class="field"><input id="new-password" type="password" placeholder="New password (min 6 characters)" autocomplete="new-password"><button class="btn" onclick="changePassword()">Update</button></div>
+  </div>
+  <div class="flash" id="settings-flash"></div>
+  {% elif settings_section == "privacy" %}
+  <div class="card">
+    <div class="setting"><div><b>Show online and last-seen status</b><small>People will only see this while you allow it.</small></div><button class="switch" id="online-switch" onclick="togglePrivacySetting('show_online')"><i></i></button></div>
+    <div class="setting"><div><b>Show last seen</b><small>Turning this off also hides everyone else's last seen from you.</small></div><button class="switch" id="lastseen-switch" onclick="togglePrivacySetting('show_last_seen')"><i></i></button></div>
+    <div class="flash" id="settings-flash"></div>
+  </div>
+  {% elif settings_section == "blocked" %}
+  <div class="card" id="blocked-list"><div class="empty">Loading…</div></div>
+  {% elif settings_section == "appearance" %}
+   <div class="card">
+     <div class="setting"><div><b>Dark theme</b><small>Stored on this device.</small></div><button class="switch" id="theme-switch" onclick="toggleTheme()"><i></i></button></div>
+     <div class="setting"><div><b>Welcome motion</b><small>The animation on the sign-in screen.</small></div><button class="switch" id="welcome-animation-switch" onclick="toggleLocalPreference('hwfar_welcome_animation','welcome-animation-switch')"><i></i></button></div>
+     <div class="setting"><div><b>Falling hearts &amp; photos</b><small>Every minute, hearts and your photos drift down the chat screen. They never block taps.</small></div><button class="switch" id="love-rain-switch" onclick="toggleLocalPreference('hwfar_love_rain','love-rain-switch')"><i></i></button></div>
+     <div class="setting"><div><b>Transcribe voice notes</b><small>Lets your voice notes be translated. Uses your browser's speech recognition while you record.</small></div><button class="switch" id="voice-transcribe-switch" onclick="toggleLocalPreference('hwfar_voice_transcribe','voice-transcribe-switch')"><i></i></button></div>
+   </div>
+  {% elif settings_section == "notifications" %}
+  <div class="card">
+    <div class="setting"><div><b>Push notifications</b><small>Get alerts on this device even when the app is closed.</small></div><button class="switch" id="notification-switch" onclick="toggleNotifications()"><i></i></button></div>
+    <div class="setting notif-category-row"><div><b>Messages</b><small>New chat messages.</small></div><button class="switch notif-category-switch" id="notif-cat-messages" onclick="toggleNotificationCategory('messages')"><i></i></button></div>
+    <div class="setting notif-category-row"><div><b>Voice notes</b><small>When someone sends you a voice message.</small></div><button class="switch notif-category-switch" id="notif-cat-voice_notes" onclick="toggleNotificationCategory('voice_notes')"><i></i></button></div>
+    <div class="setting"><div><b>Notification sound</b><small>Play a Samsung-style notification tone for new messages.</small></div><button class="switch" id="notification-sound-switch" onclick="toggleSoundPreference('hwfar_notification_sound','notification-sound-switch')"><i></i></button></div>
+    <div class="flash" id="settings-flash"></div>
+  </div>
+  {% elif settings_section == "language" %}
+  <div class="card"><div class="pills"><button class="pill language-choice" data-language="en" onclick="setLanguage('en')">English</button><button class="pill language-choice" data-language="fr" onclick="setLanguage('fr')">Français</button></div><div class="flash" id="settings-flash"></div></div>
+  {% endif %}
+</main>
+<nav class="mobile-nav" aria-label="Mobile navigation">
+  <a class="mobile-nav-item" href="/chat"><span>⌂</span><small>Chats</small></a>
+  <a class="mobile-nav-item" href="/new-chat"><span>♥</span><small>New</small></a>
+  <a class="mobile-nav-item active" href="/settings"><span>⚙</span><small>Settings</small></a>
+</nav>
+{% endblock %}
+{% block scripts %}<script>window.SETTINGS_SECTION={{ settings_section|tojson }};initSettingsPage();</script>{% endblock %}

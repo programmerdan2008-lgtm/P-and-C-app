@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Prosper &amp; Charlène — sign in{% endblock %}
+{% block head %}
+<style>
+  /* Two people, one heart: the welcome banner for a private couple chat. */
+  .people-track .person:nth-child(1){left:34px;--person-color:#f0008a;animation-delay:-.2s;transform:none}
+  .people-track .person:nth-child(2){left:104px;--person-color:#a75dd5;animation-delay:-1.4s;transform:none}
+  .people-track .love-heart{position:absolute;left:82px;bottom:78px;font-size:22px;line-height:1;color:var(--accent2);text-shadow:0 4px 14px #f0008a66;animation:heartbeat 2.6s ease-in-out infinite}
+  .welcome-stat{color:#ffd0ec}
+  .auth-private-note{margin:18px 0 0;text-align:center;font-size:12px;color:var(--muted);line-height:1.5}
+  .auth-private-note b{color:var(--accent2);font-weight:700}
+  @media(prefers-reduced-motion:reduce){.people-track .love-heart{animation:none}}
+</style>
+{% endblock %}
+{% block body %}
+<main class="auth">
+  <section class="auth-card">
+    <div class="auth-welcome" id="auth-welcome">
+      <div class="auth-welcome-copy">
+        <strong>Just the two of us.</strong>
+        <span>Your private little world for messages, calls and moments, only for Prosper and Charlène.</span>
+        <span class="welcome-stat">♥ Private · Just for two</span>
+        <button class="welcome-toggle" id="welcome-toggle" type="button" onclick="toggleWelcomeAnimation()">Skip welcome motion</button>
+      </div>
+      <div class="people-track" aria-hidden="true">
+        <span class="person phone"></span><span class="person phone"></span><span class="love-heart">♥</span>
+      </div>
+    </div>
+    <div class="brand" style="justify-content:space-between;display:flex;align-items:center"><span style="display:flex;align-items:center;gap:10px"><span class="brand-mark" aria-hidden="true">♥</span><span>Prosper ♥ Charlène</span></span><button class="btn secondary install-btn" style="width:auto;margin:0;padding:7px 12px;font-size:12px" onclick="handleInstallClick()" title="Install the app">⭳ Install app</button></div>
+    <h1 id="auth-title" style="margin-top:24px">Welcome back, love</h1>
+    <p id="auth-sub">Sign in to get back to your person.</p>
+    <form id="auth-form" novalidate>
+      <div id="login-fields">
+        <div class="field"><input id="username" autocomplete="username" placeholder="Your name (Prosper or Charlène)" required></div>
+        <div class="field"><input id="password" type="password" autocomplete="current-password" placeholder="Password" minlength="6" required></div>
+        <div class="flash" id="auth-error"></div>
+        <button class="btn" id="auth-submit" type="submit">Log in ♥</button>
+      </div>
+      <div id="signup-fields" hidden>
+        <p class="muted" style="margin:0 0 6px">Just a name and a password. This space only opens for Prosper and Charlène.</p>
+        <div class="field"><input id="signup-username" autocomplete="username" placeholder="Your name (Prosper or Charlène)" maxlength="24"></div>
+        <div class="field"><input id="signup-password" type="password" autocomplete="new-password" placeholder="Password (6+ characters)" minlength="6"></div>
+        <div class="flash" id="auth-error-signup"></div>
+        <button class="btn" id="auth-submit-signup" type="submit">Create account ♥</button>
+      </div>
+    </form>
+    <div class="auth-link"><span id="auth-toggle-copy">First time here?</span> <button id="auth-toggle" type="button">Set up my account</button></div>
+    <p class="auth-private-note">🔒 <b>Private by design.</b> Only Prosper and Charlène can have an account here.</p>
+    <button class="icon-btn" type="button" onclick="toggleTheme()" style="display:flex;margin:20px auto 0;gap:7px"><span>◐</span> Toggle theme</button>
+  </section>
+</main>
+{% endblock %}
+{% block scripts %}<script>initAuthPage();</script>{% endblock %}

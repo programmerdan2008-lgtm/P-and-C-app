@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}Prosper &amp; Charlène — new message{% endblock %}
+{% block body %}
+<header class="topbar"><a class="brand" href="/chat"><span class="brand-mark">♥</span><span>Prosper ♥ Charlène</span></a><div class="spacer"></div><button class="icon-btn install-btn" onclick="handleInstallClick()" title="Install the app">⭳ Install app</button><a href="/chat">Cancel</a></header>
+<main class="page">
+  <h1>New message</h1>
+  <p class="page-sub">Write something for your favourite person. It goes straight into your chat.</p>
+  <div class="card" id="nm-card">
+    <div class="nm-to"><div class="avatar" id="nm-avatar" style="background:var(--accent)">♥</div><div><strong id="nm-who">Loading…</strong><small id="nm-status"></small></div></div>
+    <textarea class="story-textarea" id="nm-text" maxlength="4000" placeholder="Write something sweet…" disabled></textarea>
+    <div class="nm-chips" id="nm-chips">
+      <button class="pill" type="button" data-t="Good morning my love ☀️❤️">Good morning ☀️</button>
+      <button class="pill" type="button" data-t="Thinking of you 💭">Thinking of you 💭</button>
+      <button class="pill" type="button" data-t="I love you 💕">I love you 💕</button>
+      <button class="pill" type="button" data-t="I miss you 🥺">I miss you 🥺</button>
+      <button class="pill" type="button" data-t="Goodnight, sweet dreams 🌙">Goodnight 🌙</button>
+    </div>
+    <div class="nm-actions"><button class="btn" id="nm-send" type="button" disabled>Send ♥</button><a class="btn secondary" id="nm-open" href="/chat">Open chat</a></div>
+    <div class="flash" id="new-chat-error"></div>
+  </div>
+</main>
+<nav class="mobile-nav" aria-label="Mobile navigation">
+  <a class="mobile-nav-item" href="/chat"><span>⌂</span><small>Chats</small></a>
+  <a class="mobile-nav-item active" href="/new-chat"><span>♥</span><small>New</small></a>
+  <a class="mobile-nav-item" href="/settings"><span>⚙</span><small>Settings</small></a>
+</nav>
+{% endblock %}
+{% block scripts %}<script>
+(function () {
+  var partner = null, sending = false;
+  var $ = function (id) { return document.getElementById(id); };
+  var err = $('new-chat-error'), text = $('nm-text'), send = $('nm-send');
+
+  function agoText(value) {
+    if (!value) return '';
+    var d = new Date(value.replace(' ', 'T') + 'Z');
+    return isNaN(d) ? '' : tr('last seen ') + d.toLocaleString(LOCALE(), { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+  }
+  function showPartner(p) {
+    $('nm-who').textContent = p.username;
+    $('nm-status').textContent = p.online ? 'online now' : agoText(p.last_seen);
+    var av = $('nm-avatar');
+    if (p.avatar) {
+      av.textContent = '';
+      var img = document.createElement('img'); img.alt = ''; img.src = p.avatar; av.appendChild(img);
+    } else { av.textContent = p.username.charAt(0).toUpperCase(); }
+    $('nm-open').href = '/chat/' + encodeURIComponent(p.username);
+  }
+  async function load() {
+    if (!love.token()) { location.href = '/'; return; }
+    try {
+      partner = await love.api('/couple/partner');
+      showPartner(partner);
+      if (partner.blocked) {
+        err.textContent = 'You blocked ' + partner.username + '. Unblock in Settings › Blocked users to write again.';
+        return;
+      }
+      if (partner.blocked_me) { err.textContent = partner.username + ' isn\u2019t receiving messages right now.'; return; }
+      text.disabled = false; send.disabled = false; text.focus();
+    } catch (e) {
+      if (e.status === 401) { location.href = '/'; return; }
+      $('nm-who').textContent = 'No one here yet';
+      err.textContent = e.message;
+    }
+  }
+  async function doSend() {
+    var body = text.value.trim();
+    if (!partner || sending || !body) { if (!body) err.textContent = 'Write a message first.'; return; }
+    sending = true; send.disabled = true; err.textContent = '';
+    try {
+      await love.api('/send', 'POST', { to: partner.username, type: 'text', content: body });
+      location.href = '/chat/' + encodeURIComponent(partner.username);
+    } catch (e) {
+      err.textContent = e.message; sending = false; send.disabled = false;
+    }
+  }
+  send.addEventListener('click', doSend);
+  text.addEventListener('keydown', function (e) { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) doSend(); });
+  $('nm-chips').addEventListener('click', function (e) {
+    var b = e.target.closest('button[data-t]');
+    if (!b || text.disabled) return;
+    text.value = text.value ? text.value + ' ' + b.dataset.t : b.dataset.t; text.focus();
+  });
+  load();
+})();
+</script>{% endblock %}
