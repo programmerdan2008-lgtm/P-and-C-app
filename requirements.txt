@@ -1,0 +1,7 @@
+Flask
+Flask-SocketIO
+simple-websocket
+PyJWT
+python-dotenv
+firebase-admin
+gunicorn
